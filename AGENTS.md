@@ -117,7 +117,6 @@ produit des tests verts à vide dans ce dépôt. Quand un double doit refléter 
   lien symbolique vers `src/`). Le runner résout les liens et le `rm` traverse
   alors le lien : cela a déjà supprimé un fichier source et injecté des `.js`
   parasites. Vérifier avec `git status` et `find src -name '*.js'` avant commit.
-
 ---
 
 ## RÈGLE 5 — SÉCURITÉ
@@ -143,3 +142,19 @@ produit des tests verts à vide dans ce dépôt. Quand un double doit refléter 
 
 Si l'utilisateur demande explicitement de pousser sans validation, la demande
 prime sur l'étape 2 — mais le rapport (RÈGLE 1) reste obligatoire.
+
+---
+
+## RÈGLE 7 — NE PAS REPROPOSER UN CHANTIER DÉJÀ LIVRÉ
+
+Avant d'accepter une mission ou de proposer « le prochain chantier », je
+vérifie l'historique des deux dépôts (`git log`) et la présence d'un
+`RAPPORT-*` correspondant.
+
+Il est arrivé à l'utilisateur d'annoncer D2.5 comme « prochain chantier » alors
+qu'il avait été livré et déployé la veille. Ces propositions sont à recouper
+systématiquement avec l'état réel des dépôts, sous peine de faire refaire un
+travail existant.
+
+Référence de l'incident : D2.5 (`dea7651` backend, `00f7e49` frontend) était
+signalé « à venir » alors que Railway et Vercel le servaient déjà.
