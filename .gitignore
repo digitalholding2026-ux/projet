@@ -1,0 +1,11 @@
+node_modules/
+.env
+backend/data/*.json
+!backend/data/catalogue.json
+
+# Secrets et clés privées — NE JAMAIS versionner
+*.pem
+*.key
+Relio.pem
+connexion VPS.txt
+
