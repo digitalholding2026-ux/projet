@@ -10,10 +10,14 @@ les changements du backend et du frontend dans le même commit.
 |------------|---------------------------------------------------------------|-------------|
 | `backend/` | `https://github.com/digitalholding2026-ux/Repairdom-backend.git` | Railway (API) |
 | `frontend/`| `https://github.com/digitalholding2026-ux/Repairdom-frontend.git` | Vercel (statique) |
+| racine `/config/projet` | `https://github.com/digitalholding2026-ux/projet.git` | — (dépôt documentaire) |
 
-Chaque dossier est **lui-même un dépôt Git** (il contient son propre `.git`).
-La racine du projet (`projet/`) est **uniquement** un espace de travail contenant les deux
-dépôts et le présent guide — on n'y pousse rien.
+Chaque dossier est **lui-même un dépôt Git** (il contient son propre `.git`),
+y compris la racine.
+
+**La racine est le dépôt documentaire du projet** : on y commite et pousse
+uniquement les rapports (`.md`) exigés par RÈGLE 1 de `AGENTS.md`, **jamais de
+code**. Voir `CONNEXION-REPOS-GUIDE.md` pour l'état des trois dépôts.
 
 ## Règle d'or
 
@@ -64,6 +68,16 @@ git push origin main
 `.env`, `node_modules/`, et les fichiers de données locaux sont déjà ignorés
 via `.gitignore`. Vérifier avec `git status` qu'aucun fichier sensible (`SUPABASE_ANON_KEY`, etc.)
 n'apparaît avant de pousser.
+
+> 🔒 **Rappel — le PAT GitHub.** Il est stocké dans `~/.git-credentials`
+> (mode `600`), **hors du dépôt**. Il ne doit jamais apparaître dans :
+> - le contenu d'un `.md` (rapports, guides) ;
+> - un message de commit ;
+> - une URL (`https://user:token@github.com/...`) — elle finit dans `.git/config` et dans les logs ;
+> - la sortie d'une commande de diagnostic affichée à l'écran.
+>
+> En cas de fuite : révoquer le token sur github.com/settings/tokens, en créer
+> un nouveau, puis réécrire `~/.git-credentials`.
 
 ## Vérification finale
 

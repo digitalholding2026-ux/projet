@@ -23,6 +23,10 @@ sans modification de code, je dois :**
 qui rassemble les deux dépôts applicatifs ; c'est le seul endroit où un
 lecteur trouve l'historique des chantiers sans naviguer dans deux repos.
 
+**Ne jamais committer de secret dans ce rapport** : ni PAT GitHub, ni clé, ni
+`.env`. Le token d'accès est stocké dans `~/.git-credentials` (hors dépôt).
+Voir `COMMIT-GUIDE.md`.
+
 ### Contenu attendu du rapport
 
 Rapport **factuel**, structuré en Markdown. Pas de flatterie, pas de
