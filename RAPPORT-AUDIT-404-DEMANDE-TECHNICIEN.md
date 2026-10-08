@@ -1,5 +1,26 @@
 # RAPPORT — AUDIT 404 « Demande introuvable » sur `/technicien/demandes/[id]`
 
+> ## ⚠️ RAPPORT OBSOLÈTE — CONCLUSION ERRONÉE
+>
+> Ce rapport a conclu **à tort** que la page était saine (« aucun décompilateur
+> trouvé, aucune exception imputable à 4-A »). C'est **faux** : la page
+> comportait un `useMemo` appelé après des returns anticipés, ce qui faisait
+> échouer React à chaque rendu.
+>
+> **La vraie cause est identifiée dans
+> [`RAPPORT-AUDIT-404-HOOKS-TECHNICIEN.md`](./RAPPORT-AUDIT-404-HOOKS-TECHNICIEN.md)** :
+> violation de la règle des Hooks React, ligne 447 de
+> `src/app/technicien/demandes/[id]/page.tsx`.
+>
+> **Erreur d'analyse commise ici** : l'import du `useMemo` et sa déclaration
+> avant usage dans le JSX avaient été vérifiés, mais **pas sa position par
+> rapport aux `return`**. C'est précisément ce qui fait la faute.
+>
+> Ce fichier est **conservé pour traçabilité** de l'investigation. Ne pas s'y
+> référer pour un diagnostic. Ci-dessous, la section « Questions bloquantes »
+> point 3 (« quel digest / message dans la console ? ») est la question qui
+> aurait Immediately mené à la réponse.
+
 > Audit d'investigation, sans aucune modification de code. Suite du chantier
 > 4-FONDATIONS-A, signalement production d'un écran d'erreur sur la page de
 > détail mission côté technicien.
