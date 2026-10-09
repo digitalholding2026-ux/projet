@@ -198,7 +198,60 @@ Les 5 scénarios de la mission sont applicables tels quels. Deux précisions :
   vers `/devenir-technicien`, vérifié par le nouveau test **et** par
   `technician-auth.test.ts:192`, qui reste vert.
 
+## Déploiement
+
+Vérifié par requête sur la production, sans CLI Vercel disponible.
+
+**`https://relioo.space/devenir-technicien` → 200.**
+
+Contrôle du contenu servi, pas seulement du code HTTP. Dans le HTML rendu et le
+chunk `app/devenir-technicien/page-*.js` :
+
+| Contrôle | Résultat |
+|---|---|
+| `<h1>` « Devenez technicien Relio » | présent, avec la classe `text-balance` de la refonte |
+| Les 10 sections, dans l'ordre | présentes |
+| Les 4 étapes d'onboarding | présentes, routes `profil` / `kyc` / `zones` présentes |
+| Badge « La clé » | 2 occurrences |
+| « Paiement après validation » | 3 occurrences |
+| Les 4 nets du tableau | 6 300 / 11 100 / 15 900 / 25 500, **4 occurrences chacun** (tableau + cartes) |
+| « 500 FCFA + 4 % » | 8 occurrences |
+| CTA `href="/technicien/inscription"` | 2 |
+| CTA `href="/technicien/connexion"` | 2 |
+| `<details>` de FAQ | 6 |
+| Tableau `sm:table` + cartes `sm:hidden` | les deux rendus présents |
+| Fragment `RecrutementStats` monté | oui |
+
+**Les 8 anciennes étapes sont bien disparues** : « Comment ça fonctionne »,
+« Complétez votre profil professionnel », « Faites vérifier votre identité »,
+« Un fonctionnement encadré » → **0 occurrence** chacune. C'est la preuve que la
+production sert la nouvelle version, pas un déploiement partiel.
+
+Le montant du tableau est servi avec une **espace insécable** (U+00A0), comme le
+produit `formatFCFA` : une recherche à l'espace normale ne trouve rien. Le
+contrôle a d'abord renvoyé « absent » avant d'être refait — c'est le comportement
+attendu de `formatFCFA`, pas un déploiement incomplet.
+
+`GET /cities` répond 200 en production et renvoie **2 villes et 1 zone**. La
+section chiffres s'affichera donc avec ces valeurs. Elle est absente du HTML
+statique — conforme au pattern demandé, elle n'apparaît qu'après hydratation.
+
+Un contrôle a par ailleurs trouvé un squelette de chargement dans le chunk. Il
+vient du module partagé `components/ui/skeleton.tsx`, présent dans d'autres
+chunks (`not-found`) et **sans aucune référence** depuis le code de cette page :
+du code mort embarqué, pas un rendu. Ni la page ni le fragment chiffres
+n'importent de squelette.
+
+## Historique du dépôt racine
+
+Entre l'audit et ce rapport, les deux rapports précédents ont été **supprimés du
+distant** (`RAPPORT-AUDIT-PAGE-DEVENIR-TECHNICIEN.md`, commit `a57e7de`, et
+`RAPPORT-CHANTIER-4B-PARRAINAGE.md`, commit `09f8272`). Intégrés par
+`git pull --rebase`, jamais `--force`.
+
+Conséquence : ce rapport est **autonome**. Il rappelle en ouverture les trois
+défauts qu'il corrige, mais il ne renvoie plus vers un audit lisible.
+
 ## Questions bloquantes
 
-Aucune. Le travail est indexé, vérifié et **n'a pas été poussé**, conformément à
-la consigne « NE PAS PUSH AVANT VALIDATION ».
+Aucune. Déployé et vérifié.
