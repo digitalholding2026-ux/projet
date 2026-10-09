@@ -110,6 +110,43 @@ teste la mécanique du mock et non la logique métier. Les deux pièges ont déj
 produit des tests verts à vide dans ce dépôt. Quand un double doit refléter un
 `update`, il le fait.
 
+### ⚠️ Les tests statiques lisent les MOTS des commentaires
+
+Le dépôt n'a ni jsdom ni testing-library : les tests frontend sont **statiques**,
+ils font `readFileSync(page.tsx)` puis des `assert.match` / `doesNotMatch` sur le
+**texte entier du fichier — commentaires et chaînes de caractères compris**.
+
+Conséquence : **un commentaire anodin peut casser un test.** Exemple vécu au
+chantier 6B : un commentaire expliquant « le litige reste en lecture seule, aucun
+`openDispute` ici » a fait échouer `dispute-status.test.ts`, qui fait
+`assert.doesNotMatch(page, /openDispute/)` pour garantir qu'aucun POST n'existe
+côté technicien. Le test avait raison ; c'est le commentaire qu'il a fallu
+réécrire en langage métier.
+
+Mots-clés **interdits dans les commentaires** d'un fichier lu par un test
+statique (tant qu'une assertion négative les surveille) :
+
+| Mot-clé | Test typiquement associé |
+|---|---|
+| `openDispute` | `dispute-status.test.ts` (interdit côté technicien) |
+| `window.innerWidth` | `dispute-status.test.ts`, `responsive.test.ts` |
+| `saspay` / `SasPay` / `frais Mobile Money` | `saspay-fees.test.ts` (interdit côté client) |
+| `MediaGallery` | `demande-media.test.ts` |
+| `Choisir un diagnostic`, `getDemandeSuggestions`, `selectDemandeDiagnostic` | `demande-media.test.ts` |
+| `useMemo`, `useCallback` | `technician-quote.test.ts` (interdits sur la page devis) |
+| `useState`, `useEffect` | `technician-quote.test.ts` (interdits APRÈS un return anticipé) |
+| `suite.close`, `describe.skip`, `it.skip`, `.only` | garde-fous d'exécution |
+
+**Règle** : formuler les commentaires en **langage métier**, jamais avec le
+nom d'une API, d'une variable ou d'un composant qu'un test pourrait surveiller
+par son identifiant textuel. Écrire « le technicien ne peut pas ouvrir de litige »
+plutôt que « aucun `openDispute` ».
+
+Avant de conclure qu'un test statique est cassé par la réorganisation : **lire
+son assertion et chercher le mot fautif dans le fichier entier, pas seulement
+dans le JSX rendu.** Un test qui casse sur un commentaire se corrige dans le
+commentaire.
+
 ---
 
 ## RÈGLE 4 — ENVIRONNEMENT NODE
