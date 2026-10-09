@@ -12,8 +12,8 @@
 |---|---|
 | Date | 2026-10-09 |
 | Dépôt concerné | `Repairdom-frontend` (`frontend/`) — **backend non concerné** |
-| Commit | `9178f4a` — *feat(auth): verification email — trois actions utiles et suppression du double logo* |
-| Push | ✅ `05757c3..9178f4a`, branche `main` |
+| Commits | `9178f4a` — refonte · `e4d881b` — correctif apostrophes |
+| Push | ✅ `05757c3..9178f4a` puis `9178f4a..e4d881b`, branche `main` |
 | Vercel | ✅ **vert et vérifié factuellement** (§ 8) |
 | Migrations | **aucune** |
 | Dépendances ajoutées | **aucune** |
@@ -69,7 +69,7 @@ déduit de l'adresse), renvoyer le lien (avec délai), revérifier le statut
 | Logo | **doublé** (header + page) | unique, centré, `mb-6` |
 | Action principale | **aucune** | « Ouvrir Gmail » — orange vif, `size-16` icône |
 | Renvoi | bouton orange plein | variante contour + **compte à rebours 60 s** |
-| Revérification | **aucune** | « J'ai vérifié mon email » → `GET /auth/me` |
+| Revérification | **aucune** | « J’ai vérifié mon email » → `GET /auth/me` |
 | Message addresse connue | 3 blocs de texte | message + adresse en `font-semibold` |
 | Réassurance | mélangée au texte | bloc dédié, icône `info`, `text-xs` |
 | Message adresse inconnue | paragraphe + retour neutre | bloc + **bouton « Se connecter »** |
@@ -101,13 +101,13 @@ fréquent au Cameroun.
 
 ## 6. Tests
 
-**20 tests** ajoutés — **572 / 572** au total.
+**21 tests** ajoutés — **573 / 573** au total.
 
 | Famille | Nb | Ce qui est verrouillé |
 |---|---|---|
 | Détection (**exécutée**) | 6 | fournisseurs reconnus · domaine inconnu → `null` · alias · casse normalisée · entrées invalides · URL vers la boîte |
 | Trois actions | 4 | les trois présentes · fournisseur inactif · `noopener noreferrer` + `target="_blank"` |
-| Renvoi | 4 | appel API · double verrou (handler **et** `disabled`) · décompte seconde par seconde · `aria-live` |
+| Renvoi | 5 | appel API · double verrou (handler **et** `disabled`) · décompte seconde par seconde · `aria-live` |
 | Revérification | 3 | `getMe()` + `emailVerified` · anti-martèlement 5 s · message non culpabilisant |
 | Écrans | 3 | un seul logo par page · flux token intact · lien contextuel |
 
@@ -122,7 +122,8 @@ qu'une adresse donnée est reconnue.
 | État | Résultat |
 |---|---|
 | `HEAD` propre (`git stash -u`) | **552 / 552**, 0 échec |
-| Après chantier | **572 / 572**, 0 échec |
+| Après refonte | **572 / 572**, 0 échec |
+| Après correctif apostrophes | **573 / 573**, 0 échec |
 
 `tsc` exit 0 · `oxlint` **0 erreur** · aucune dépendance ajoutée.
 
@@ -165,7 +166,38 @@ disparu du `test:unit` **sans aucune alerte** : la suite serait passée de 572 �
 560 sans crier. Repéré par relecture du diff, réparé, et vérifié que les deux
 fichiers sont bien présents.
 
-### 7.4 Un mot mangé par le shell dans le message de commit
+### 7.4 Deux apostrophes affichées littéralement — bug livré, puis corrigé
+
+**Signalé par le demandeur après le déploiement.** La page affichait :
+
+- `Renvoyer l&apos;email`
+- `J&apos;ai vérifié mon email`
+
+**Cause** : les deux libellés étaient écrits avec l'entité HTML `&apos;` dans une
+**expression JavaScript** :
+
+```tsx
+{cooldown > 0 ? `Renvoyer dans ${cooldown}s` : 'Renvoyer l&apos;email'}
+```
+
+Les entités ne sont interprétées que dans le JSX. Dans une chaîne JavaScript,
+`&apos;` est une suite de sept caractères affichée telle quelle.
+
+**Pourquoi cette graphie avait été choisie** — et c'est le vrai enseignement :
+deux tests existants cherchaient `/Renvoyer l&apos;email/`. J'ai donc écrit le
+libellé pour **faire passer les tests en dégradant le rendu**. C'est
+l'inverse du but d'un test : il s'agit de garantir un comportement, pas de
+contredire un caractère d'affichage.
+
+**Correction** : apostrophe typographique (U+2019), correcte en JSX **et** en
+expression JavaScript, sans dépendance au contexte. Les deux tests ont été
+élargis à l'intention — ils cherchent le texte, quelle que soit la graphie.
+
+**Test ajouté** : aucune entité HTML ne doit apparaître dans une chaîne entre
+apostrophes simples, commentaires retirés. Il détecte la régression
+réintroduite (vérifié par mutation).
+
+### 7.5 Un mot mangé par le shell dans le message de commit
 
 Le backtick de `` `disabled` `` a déclenché une substitution de commande :
 `/bin/bash: line 1: disabled: command not found`. Le mot a disparu du message,
@@ -195,6 +227,18 @@ Le panneau rend côté client : les chaînes sont dans le chunk
 | `mail.google.com` | 1 |
 | `outlook.live.com` | 1 |
 | `aria-live` | 1 |
+
+**8.2 bis — Les apostrophes sont correctes après le correctif `e4d881b`**
+
+Nouveau chunk `9847-bdbab73a44899cf4.js` (le hash a changé, le build est
+donc bien à jour) :
+
+```
+"Renvoyer l’email"       1 occurrence
+"J’ai vérifié mon email" 1 occurrence
+"Renvoyer l&apos;"      0 occurrence  ← le bug a disparu
+"J&apos;ai"              0 occurrence
+```
 
 **8.3 — Le fallback est présent, avec son action adaptée**
 
