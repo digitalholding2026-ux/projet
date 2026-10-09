@@ -5,11 +5,39 @@
 | Champ | Valeur |
 |---|---|
 | Date | 2026-10-09 |
-| Dépôt | `Repairdom-frontend` — **NON POUSSÉ** (en attente de validation) |
+| Dépôt | `Repairdom-frontend` → **`1b65884`** |
 | Base | `95f7b8e` |
-| Commit | **Aucun.** Tout est sur l'arbre de travail. |
+| Commit | `refactor(mission): restructure client mission screen into status-prioritised sections` |
+| Déploiement | **Vercel vert**, vérifié dans le bundle JS servi |
 | Backend | **Non touché** — `git status --porcelain` vide dans `Repairdom-backend` |
 | Node | 22.20.0 (`/tmp/opencode/node-v22.20.0-linux-x64`) |
+| Validation | Utilisateur — les 3 écarts acceptés avant push |
+
+### Preuve de déploiement
+
+HTTP 200 ne prouve rien pour une refonte d'UI : le nouveau code peut servir
+sans que la page ait changé. L'ordre des sections a donc été vérifié **dans le
+JavaScript réellement servi** par
+`/_next/static/chunks/app/client/demandes/%5Bid%5D/page-64a050f55b00b92f.js`
+(Build ID différent d'avant le push) :
+
+| Section | Offset dans le bundle |
+|---|---|
+| État de la mission (action prioritaire) | 34 172 |
+| Suivi de l'intervention | 37 186 |
+| Détail de la mission | 38 408 |
+| Diagnostic et proposition | 39 994 |
+| Discussion | 45 183 |
+| Chronologie | 45 555 |
+| Avis | 46 037 |
+| Litige | 47 326 |
+
+Ordre **strictement croissant** — conforme à la hiérarchie validée.
+
+Marqueurs du chantier également confirmés présents : « Recherche d'un technicien
+en cours », « Discussion avec le technicien », « Annuler la demande », « Vos
+fonds restent bloqués ».
+Marqueurs de l'ancien écran **absents** : `FloatingChat`, `chatOpen`.
 
 ## Synthèse
 
@@ -158,6 +186,25 @@ Aucun bug fonctionnel rencontré. Deux constats de conception vérifiés en lect
    production 1 à 6 n'ont pas été joués : aucun test de rendu React n'existe
    dans ce dépôt (`node --test` sur `.ts` purs uniquement). Les hauteurs de
    scroll annoncées dans la commande (~2 400 px) n'ont pas été remesurées.
+
+7. **Le test de hiérarchie nouvellement ajouté (`technician-quote.test.ts`)
+   contrôle le source, pas le DOM rendu.** Il vérifie l'ordre des `aria-label`
+   de section dans le fichier, ce qui garantit la hiérarchie *du code* mais pas
+   le rendu effectif après les conditions (`hasPendingQuote`, `showLiveTracking`,
+   etc.) — c'est ce que les scénarios de production couvrent.
+
+## Scénarios de test en attente
+
+L'utilisateur va jouer les 6 scénarios. Points d'attention par scénario :
+
+| # | Scénario | Ce qu'il faut observer en priorité |
+|---|---|---|
+| 1 | Mission `SUBMITTED` | bandeau « Recherche d'un technicien en cours » en haut ; **aucun** bloc GPS, **aucun** chat, **aucune** chronologie |
+| 2 | Devis `PENDING` | la carte devis est **en haut, sans scroller** ; détail réparation + déplacement + total ; garde solde si insuffisant |
+| 3 | Mission `ACCEPTED` | bandeau « Technicien assigné » ; carte GPS si le technicien a partagé sa position ; discussion **inline** dans le flux (plus de bulle flottante) |
+| 4 | Mission `COMPLETED` | CTA « Confirmer l'intervention » en haut + rappel des fonds bloqués ; litige accessible ; diagnostic et devis affichés |
+| 5 | Mission `CANCELED` | bandeau « Mission annulée » ; **ni GPS, ni médias, ni chronologie** |
+| 6 | Non-régression | avis en `CONFIRMED` ; chat SSE temps réel ; push toujours reçu |
 
 ## Questions bloquantes
 
