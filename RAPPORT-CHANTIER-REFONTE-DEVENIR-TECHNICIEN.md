@@ -5,11 +5,11 @@
 | Champ | Valeur |
 |---|---|
 | Date | 2026-10-09 |
-| Dépôt applicatif | `Repairdom-frontend` — **NON POUSSÉ**, travail indexé, en attente de validation |
+| Dépôt applicatif | `Repairdom-frontend` — commit `644f037`, poussé sur `main` |
 | Dépôt | `projet` (racine) — ce rapport |
 | Node | 22.20.0 (`/tmp/opencode/node-v22.20.0-linux-x64`) |
-| Préalable | `RAPPORT-AUDIT-PAGE-DEVENIR-TECHNICIEN.md` (lecture seule, même date) |
-| Vercel | **NON DÉPLOYÉ** — le push n'a pas eu lieu |
+| Préalable | audit de la même page, supprimé du dépôt racine entre-temps (voir §Historique) |
+| Vercel | **VERT** — vérifié par requête, voir §Déploiement |
 
 ## Synthèse
 
