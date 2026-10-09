@@ -5,9 +5,10 @@
 | Champ | Valeur |
 |---|---|
 | Date | 2026-10-09 |
-| Dépôt | `Repairdom-frontend` — **NON POUSSÉ** (en attente de validation) |
+| Dépôt | `Repairdom-frontend` → **`40b8f9f`** (correctifs) + **`5c29502`** (backlog) |
 | Base | `77b4c8b` |
-| Commit | **Aucun.** Tout est sur l'arbre de travail. |
+| Commit | `fix(mission): stop acting on data that failed to load on both mission screens` |
+| Déploiement | **Vercel vert**, vérifié dans les deux bundles servis |
 | Backend | **Non touché** — `git status --porcelain` vide |
 | Node | 22.20.0 (`/tmp/opencode/node-v22.20.0-linux-x64`) |
 
@@ -159,6 +160,51 @@ statiques lisent les MOTS ») s'est confirmée : ici c'est la **formule** qui
 bandeau *technique* ne remplace pas le bandeau *métier*. Un technicien
 `REJECTED` hors ligne doit voir « Impossible de vérifier… » ; en ligne, il doit
 revoir « Vérifiez votre identité » avec son motif de refus.
+
+## Preuve de déploiement
+
+Les deux bundles ont été inspectés (Build IDs différents d'avant le push) :
+
+`app/client/demandes/[id]/page-546eafa897396ad6.js`
+
+| Marqueur | Constat |
+|---|---|
+| « Impossible de vérifier votre solde. » | ✅ |
+| « Vérification de votre solde en cours » | ✅ |
+| « Réessayer » | ✅ |
+| « Impossible de charger l'historique » | ✅ |
+| `saspay` / `SasPay` | ✅ **absents** (invariant 6C-1/chantier transparence) |
+
+`app/technicien/demandes/[id]/page-f9cc198b01c366f0.js`
+
+| Marqueur | Constat |
+|---|---|
+| « Impossible de vérifier votre statut d'identité » | ✅ |
+| « Réessayer » | ✅ |
+| « Impossible de charger l'historique » | ✅ |
+| « Libellé non disponible » | ✅ |
+| `openDispute` | ✅ **absent** (le technicien reste en lecture seule) |
+
+Méthode : les accents sont échappés en `\xe9` / `\u2019` par le minifieur. Une
+recherche en texte clair renvoyait « absent » pour des marqueaux pourtant
+présents — faux négatif de vérification, pas une absence du bundle.
+
+## Suite inscrite au backlog
+
+Créé `frontend/docs/UX-BACKLOG.md` (commit `5c29502`) — le pendant frontend
+de `backend/docs/UX-BACKLOG.md`, les domaines restant séparés.
+
+Y est consigné le point le plus important de ce chantier : **un effet déplacé
+silencieusement lors d'une refonte n'est détecté par rien.** Le bloc de lecture
+du solde avait été réécrit en 6A sans changement de comportement observable —
+`tsc`, les tests et le lint sont tous restés verts. C'est une relecture ciblée
+du 6C-1 qui l'a vu, deux jours plus tard. Le réflexe prescrit : avant de
+commiter une refonte, faire un diff des **effets** et non seulement du JSX
+rendu, et vérifier que chaque appel réseau reste attaché au même
+déclenchement qu'avant.
+
+Y figurent aussi trois suivis non traités ici : `getDispute`,
+`listDemandeDiagnostics` et `listDemandeQuotes` restent silencieux côté client.
 
 ## Questions bloquantes
 

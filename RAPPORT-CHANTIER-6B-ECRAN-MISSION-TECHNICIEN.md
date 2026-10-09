@@ -8,6 +8,7 @@
 | Dépôt | `Repairdom-frontend` → **`77b4c8b`** |
 | Base | `1b65884` |
 | Commit | `refactor(mission): restructure technician mission screen into four contextual tabs` |
+| Note | Ce chantier a été suivi d'un correctif (`40b8f9f`, chantier 6C-1) sur la même page. Le commit applicatif `77b4c8b` n'a pas été modifié depuis. |
 | Déploiement | **Vercel vert**, vérifié dans le bundle JS servi |
 | Backend | **Non touché** — `git status --porcelain` vide dans `Repairdom-backend` |
 | Node | 22.20.0 (`/tmp/opencode/node-v22.20.0-linux-x64`) |
