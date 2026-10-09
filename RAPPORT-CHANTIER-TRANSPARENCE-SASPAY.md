@@ -5,10 +5,30 @@
 | Champ | Valeur |
 |---|---|
 | Date | 2026-10-08 |
-| Dépôts | `Repairdom-backend` (`da71861`), `Repairdom-frontend` (`50002d9`) — **NON PUSHÉS** |
-| Commits | **Aucun.** Tout est sur l'arbre de travail, en attente de validation. |
-| Node | 22.20.0 installé dans `/tmp/opencode/node-v22.20.0-linux-x64` (la machine était en 20.20.2, cf. Points d'attention) |
-| Déploiement | Non lancé (rien de poussé) |
+| Dépôts | `Repairdom-backend` → **`2e03366`**, `Repairdom-frontend` → **`95f7b8e`** |
+| Commits | **1 par dépôt**, poussés dans l'ordre backend → frontend (RÈGLE 2) |
+| Déploiement | **Railway** ✅ redéployé et vérifié. **Vercel** ✅ redéployé et vérifié. |
+| Node | 22.20.0 installé dans `/tmp/opencode/node-v22.20.0-linux-x64` (la machine reste en 20.20.2 par défaut) |
+| Validation | Utilisateur — les 3 arbitrages confirmés avant push |
+
+### Preuve de déploiement
+
+**Railway** — `GET /api/health` a renvoyé `uptime: 63079` puis `uptime: 4.02`
+sur deux appels distants : l'instance a bien redémarré après le push. Réponse
+courante : `{"status":"ok","database":"up"}`.
+
+**Vercel** — inspection du JavaScript réellement servi, pas seulement du code
+HTTP :
+
+| Page | Chunk vérifié | Marqueur attendu | Constat |
+|---|---|---|---|
+| `/client/solde/recharger` | `app/client/solde/recharger/page-e55a3cf….js` | `Confirmer et payer`, `Frais Mobile Money (4,5 %)`, `Math.ceil(.045*e)` | ✅ présents |
+| `/technicien/revenus` | chunk partagé `9889-d19f….js` | `Frais de transfert Mobile Money pris en charge par Relio.` | ✅ présente |
+| tous écrans technicien | idem | `Frais SasPay`, `Débité de votre solde`, `Reçu bénéficiaire`, `0.035` | ✅ **absents** |
+
+Les Build IDs de chunks diffèrent de ceux d'avant le push. L'absence des
+anciens libellés de frais dans le bundle servi confirme que le nouveau code est
+en production, et pas l'ancien.
 
 ## Synthèse
 
@@ -166,8 +186,44 @@ d'appelant UI.
 
 ## Questions bloquantes
 
-Aucune pour le push.
+Aucune.
 
-Une question reste ouverte pour la suite : le refus de l'endpoint breakdown
-(A.3) doit-il être confirmé, ou faut-il une autre forme de transparence côté
-technicien ?
+## Suite — tests en production
+
+Cinq scénarios à faire tourner par l'utilisateur (déjà précisés dans la
+spécification) :
+
+1. **Recharge client** — saisir 2 000 → l'aperçu doit afficher 2 000 / 90 /
+   2 090, SasPay débiter 2 090, le solde être crédité de 2 000.
+2. **Mission client** — devis 15 000 → payer 17 000, **aucun frais visible**.
+3. **Payout technicien** — solde 15 900, retrait de 15 900 → il doit recevoir
+   **exactement 15 900**, et la mention « pris en charge par Relio » doit être
+   visible sur l'écran de retrait.
+4. **Plafond** — retrait net de 10 000 000 → brut envoyé 10 362 695.
+5. **Non-régression** — les missions antérieures affichent les mêmes montants.
+
+### Plan de correction si le test 4 échoue
+
+Si SasPay refuse un payout au-delà de 10 M **brut** (hypothèse non vérifiable
+sans transaction réelle, cf. Points d'attention §1), le scénario observable est
+un `FAILED` propre : le hold est libéré, aucun débit, le technicien peut
+reposer une demande. Aucun fonds n'est perdu et le ledger n'est pas faussé.
+
+Le correctif tient en une ligne — borner le NET au plafond technique :
+
+```ts
+// backend/src/financial/saspay-fees.ts
+export const MAX_PAYOUT_GROSS_XAF = 10_000_000;
+export function computeMaxWithdrawableNetXAF(): number {
+  return Math.floor(MAX_PAYOUT_GROSS_XAF * (1 - SASPAY_PAYOUT_RATE));
+}
+```
+
+à appliquer dans `assertWithdrawalAmount` (`financial.service.ts`) **et** dans
+le `@Max` du DTO `create-withdrawal-request.dto.ts`, avec la même constante
+miroir côté frontend (`finance-limits.ts`) — sinon l'UI proposerait un montant
+que le serveur refuse.
+
+À noter : ce correctif contredit la décision validée n°3 (plafond à 10 M sur le
+net). Il ne doit être appliqué que sur confirmation factuelle du refus SasPay,
+pas par précaution.
