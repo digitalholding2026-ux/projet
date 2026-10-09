@@ -263,7 +263,7 @@ Contrôle du contenu servi, et pas seulement du code HTTP : le chunk
 et « Réessayer ». Le chunk d'inscription contient « Code parrainage (facultatif) »
 et `RELIO-XXXXX`.
 
-Une absence a été vérifiée et **neвуя pas un problème** : `client.referrals_updated`
+Une absence a été vérifiée et **n'est pas un problème** : `client.referrals_updated`
 n'apparaît dans aucun chunk frontend. C'est le canal SSE que le *backend* émet
 pour rafraîchir la page du parrain ; le frontend ne s'y abonne pas encore, comme
 annoncé au §Points d'attention 5. Le nom `ProgressionBar` est également absent
