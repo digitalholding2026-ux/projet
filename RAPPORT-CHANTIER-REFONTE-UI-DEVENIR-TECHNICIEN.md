@@ -1,8 +1,8 @@
 # RAPPORT — Refonte UI `/devenir-technicien` (mobile-first)
 
-> Chantier **écrit et vérifié, non poussé**. Rapport de demande de validation.
-> Aucun commit applicatif, aucun push Vercel.
-> **Aucun texte, contenu, ordre de section ni logique n'a été modifié.**
+> Chantier **livré et déployé**. Rapport factuel : chiffres réels, écarts avec
+> la demande notés, vérifications de production distinguées des vérifications
+> statiques.
 
 ---
 
@@ -12,40 +12,52 @@
 |---|---|
 | Date | 2026-10-09 |
 | Dépôt concerné | `Repairdom-frontend` (`frontend/`) — **backend non concerné** |
-| HEAD | `5cc5776` |
-| Commits produits | **aucun** — en attente de validation |
+| Commit | `4d4c517` — *feat(technicien): refonte UI de /devenir-technicien (visuel seul)* |
+| Push | ✅ `5cc5776..4d4c517`, branche `main` |
+| Vercel | ✅ **vert et vérifié factuellement** (§ 8) |
 | Migrations | **aucune** |
 | Dépendances ajoutées | **aucune** |
+
+**Aucun texte, aucun contenu, aucun ordre de section, aucune logique n'a été
+modifié.** Uniquement des classes CSS et une illustration.
+
+Deux arbitrages demandés avant push, appliqués :
+
+1. **Assertion élargie** sur `devenir-technicien.test.ts`, puis nouveau rythme
+   appliqué aux deux blocs du barème (§ 5.1).
+2. **`bg-muted/30` → `bg-muted/60`**, pour un rythme perceptible au soleil (§ 4.2).
+
+L'illustration à **574 Ko** est poussée telle quelle, sur arbitrage explicite.
 
 ---
 
 ## 2. Synthèse
 
 La page s'ouvre sur du **profond** au lieu d'un aplat orange, et les dix
-sections alternent désormais leurs fonds au lieu de former une suite de blocs
+sections alternent leurs fonds au lieu de former une suite de blocs
 identiques. Les cartes se soulèvent au survol, l'illustration du parcours est
 intégrée, les chiffres tiennent la taille qui porte leur section.
 
-Ordre des sections, textes, ancres et composants fonctionnels : **inchangés**.
-
 ---
 
-## 3. Fichiers
+## 3. Fichiers (8)
 
 | Fichier | Nature |
 |---|---|
-| `src/app/devenir-technicien/page.tsx` | hero, rythme, illustration, cartes, FAQ, CTA — +243 / −124 |
-| `src/app/devenir-technicien/recrutement-stats.tsx` | chiffres XXL, sans carte — +69 / −24 |
-| `src/app/globals.css` | `.recruit-halo`, `.card-premium` — +31 |
-| `src/lib/technician-recruitment-ui.test.ts` | **créé** — 12 tests |
+| `src/app/devenir-technicien/page.tsx` | hero, rythme, illustration, cartes, FAQ, CTA — +153 / −92 |
+| `src/app/devenir-technicien/recrutement-stats.tsx` | chiffres XXL, sans carte — +45 / −24 |
+| `src/app/globals.css` | `.recruit-halo`, `.card-premium` — +43 |
+| `src/lib/technician-recruitment-ui.test.ts` | **créé** — 12 tests, 174 l. |
+| `src/lib/devenir-technicien.test.ts` | assertion élargie — +14 / −6 |
 | `src/lib/technician-recruitment-ui.test.ts` | enregistré dans `package.json` et `tsconfig.json` |
 | `public/technicien/parcours-illustration.png` | **déplacé** depuis `public/` (renommage suivi par git) |
+| `package.json` · `tsconfig.json` | enregistrement du nouveau fichier de test |
 
-**8 fichiers** au total (création, déplacement et modifications confondus).
+**+426 / −130.**
 
 ---
 
-## 4. Sections — le tableau demandé est respecté à la lettre
+## 4. Sections
 
 | # | Section | Avant | Après |
 |---|---|---|---|
@@ -60,58 +72,88 @@ Ordre des sections, textes, ancres et composants fonctionnels : **inchangés**.
 | 9 | FAQ | blanc | **gris clair**, ombres, chevron orange |
 | 10 | CTA final | carte blanche | **noir profond** + halo centré |
 
-**5 halos décoratifs**, tous `pointer-events: none` (un halo intercepterait les
-clics sur les CTA qu'il recouvre).
+**10 halos décoratifs** au total (2 par bandeau, 1 par section alternée),
+tous `pointer-events: none` : un halo intercepterait les clics sur les CTA
+qu'il recouvre.
 
-### Typographie (Partie G)
+### 4.1 Typographie et espacements
 
-- **H2** : `text-3xl md:text-4xl font-bold` — avant `text-xl sm:text-2xl`
-- **Sous-titres** : `text-base md:text-lg` — avant `text-sm`
-- **Respiration** : `py-12 md:py-16` sur les sept sections de contenu
-- **Grilles** : `gap-4 md:gap-6` — avant `gap-3`
-- **Avant première carte** : `mt-8 md:mt-12` — avant `mt-6`
+| Élément | Avant | Après |
+|---|---|---|
+| H2 | `text-xl sm:text-2xl` | `text-3xl md:text-4xl` |
+| Sous-titres | `text-sm` | `text-base md:text-lg` |
+| Respiration | `mt-12` + cartes `mt-6` | `py-12 md:py-16` sur les 7 sections de contenu |
+| Grilles | `gap-3` | `gap-4 md:gap-6` |
+| Avant première carte | `mt-6` | `mt-8 md:mt-12` |
+| Cartes | `rounded-xl p-5 shadow-card` | `rounded-2xl p-6` + élévation |
 
-Les deux bandeaux (hero, CTA final) gardent leur padding par contenu : ce sont
-des blocs pleins, pas des sections de contenu.
+### 4.2 Le gris alterné est à 60 %, pas 30 %
+
+`--muted` vaut `#eef0f3`. À 30 %, le composite donne `#f9fafb` sur fond blanc :
+le rythme était **presque invisible**. Passé à **60 %** (≈ `#f4f5f7`), l'alternance
+se perçoit.
+
+La valeur est **fixée par un test** (`bg-muted\/60`, comptage exact) : elle ne
+peut pas redescendre en silence à la prochaine refonte.
+
+Le dégradé de fond sous l'illustration a suivi (`from-muted/30` → `from-muted/60`) :
+à 30 %, il fondait dans un fond plus clair que lui.
 
 ---
 
-## 5. Illustration du parcours
+## 5. Ce qui a été demandé avant push
 
-Intégrée en tête de section 3, au-dessus des quatre étapes.
+### 5.1 Assertion élargie, puis rythme appliqué
 
-- `width={1600}` / `height={900}` : **obligatoires**, sans quoi le navigateur
-  réserve zéro hauteur et la page saute au chargement
-- `sizes` responsive, `alt` renseigné
-- Dégradé de fond pour fondre l'image dans la section plutôt que la poser
-  comme une carte de plus
-- **Poids : 574 122 o** — voir § 9.1
+`devenir-technicien.test.ts:331` **verrouillait deux chaînes littérales** :
 
----
+```js
+assert.match(page, /hidden w-full border-collapse[\s\S]*?sm:table/);
+assert.match(page, /<ul className="mt-6 grid gap-3 sm:hidden">/);
+```
 
-## 6. Vérifications
+La seconde interdisait **toute** classe supplémentaire. Conséquence constatée au
+chantier : après avoir appliqué le nouveau rythme à ces deux blocs, le test a
+cassé et les classes ont dû être **restaurées à l'identique**. Le tableau et
+les cartes mobiles du barème restaient alors les **deux seuls blocs de la page
+hors du rythme**.
 
-| Contrôle | Résultat |
+L'assertion vérifie désormais l'**intention** :
+
+| Avant (littéral) | Après (intention) |
 |---|---|
-| `npx tsc --noEmit` | **exit 0** |
-| `npx oxlint src/` | **0 erreur**, 2 warnings préexistants hors périmètre |
-| `npm run test:unit` | **546 / 546** |
+| chaîne `<ul>` complète | `/<ul[^>]*\bsm:hidden\b[^>]*>/` |
+| `hidden … sm:table` en ordre fixe | `/<table[^>]*\bhidden\b[^>]*\bborder-collapse\b[^>]*\bsm:table\b[^>]*>/` |
 
-**Non-régression prouvée** : `HEAD` propre (`git stash -u`) = **534 / 534**.
-Les 546 incluent les 534 d'origine — aucun test perdu, aucun échec nouveau.
+Invariants réellement protégés : la bascule mobile, la grille, et la source
+partagée (`QUOTE_AMOUNTS_XAF.map` apparaît exactement 2 fois).
 
-Les 2 warnings (`client/parrainage/page.tsx`, imports inutilisés) sont
-présents sur `HEAD` propre, sans rapport avec ce chantier.
+**Les deux blocs ont ensuite reçu le nouveau rythme** : `mt-6` → `mt-8 md:mt-12`,
+`rounded-xl` → `rounded-2xl`, `gap-3` → `gap-4`, et `card-premium` sur les
+cartes mobiles. **Aucun bloc de la page n'est désormais hors rythme.**
 
-### Les 12 nouveaux tests
+Assertions élargies **validées par mutation** : retirer la bascule du tableau →
+1 échec ; retirer celle des cartes → 1 échec.
+
+### 5.2 Illustration à 574 Ko
+
+Poussée telle quelle, sur arbitrage explicite. Elle dépasse de **74 Kio** le
+seuil de 500 Kio retenu pour les visuels du programme de récompenses. Point
+ouvert, non bloquant (§ 9.1).
+
+---
+
+## 6. Tests
+
+**12 tests** créés — **546 / 546** au total.
 
 | Famille | Nb | Ce qui est verrouillé |
 |---|---|---|
 | Bandeau | 2 | fond profond · absence d'aplat orange · halos · `pointer-events: none` |
-| Rythme | 3 | ≥3 fonds alternés · 2 fonds profonds · respiration des 7 sections de contenu |
+| Rythme | 3 | ≥3 fonds alternés · **taux à 60 %** · respiration des 7 sections de contenu |
 | Illustration | 2 | chemin branché **+ fichier présent sur disque** · `width`/`height`/`alt` |
 | Chiffres | 2 | `text-5xl` et `md:text-6xl` · filet vertical unique |
-| Cartes | 2 | classe unique partagée · élévation `translateY(-2px)` · neutralisée si moins de mouvements |
+| Cartes | 2 | classe unique partagée · `translateY(-2px)` · neutralisée si moins de mouvements |
 | Intégrité | 1 | la page reste un composant serveur |
 
 Validés **par mutation** :
@@ -120,112 +162,122 @@ Validés **par mutation** :
 |---|---|
 | Hero repassé en `bg-orange-500` | **3 échecs** |
 | Chiffres repassés en `text-2xl` | **1 échec** |
+| Bascule mobile retirée du tableau | **1 échec** |
+| Bascule mobile retirée des cartes | **1 échec** |
 
-### Tests existants : ordre des sections préservé
+### Non-régression
 
-`devenir-technicien.test.ts` (23 tests) vérifie l'**ordre des dix sections**
-par `indexOf` sur les ancres `aria-labelledby`. Ordre préservé, test vert.
+| État | Résultat |
+|---|---|
+| `HEAD` propre (`git stash -u`) | **534 / 534**, 0 échec |
+| Après chantier | **546 / 546**, 0 échec |
 
----
-
-## 7. Bugs trouvés
-
-### 7.1 Un test existant plus strict que la demande
-
-`devenir-technicien.test.ts:331` verrouille deux chaînes **littérales** :
-
-```
-/<ul className="mt-6 grid gap-3 sm:hidden">/
-/hidden w-full border-collapse[\s\S]*?sm:table/
-```
-
-J'avais appliqué le nouveau rythme (`mt-8`, `rounded-2xl`) à ces deux blocs :
-**le test a cassé**. Les classes ont été **restaurées à l'identique**.
-
-**Conséquence assumée** : l'espacement du tableau et des cartes mobiles du
-barème (section 6) reste sur l'ancien `mt-6` et `rounded-xl`. **Ces deux blocs
-n'ont pas reçu le nouveau rythme**, alors que leurs voisins l'ont.
-
-À trancher : élargir l'assertion, ou laisser ces deux blocs en écart.
-
-### 7.2 Trois de mes propres tests étaient faux
-
-Le code produit était correct dans les trois cas ; ce sont les tests qui
-étaient mal écrits.
-
-1. **Chemin d'asset faux** — `../public/…` depuis `src/lib/` résout vers
-   `src/public/`, inexistant. Le test concluait que l'image manquait alors
-   qu'elle était là. Corrigé en `../../public/…`.
-   → **C'est la deuxième fois que je commets cette erreur** sur ce dépôt, après
-   le même cas dans `landing-animations.test.ts`. Signalée, pas passée sous
-   silence : elle se reproduit parce que je raisonne sur le dépôt racine au
-   lieu du répertoire du fichier de test.
-
-2. **Mauvaise media query ciblée** — `lastIndexOf('@media (prefers-reduced-motion: reduce)')`
-   trouvait la règle **globale** du dépôt (qui ne traite que les durées), pas
-   celle de `.card-premium`. Le test aurait validé la mauvaise règle. Corrigé
-   en cherchant la media query **située après** la déclaration de la classe.
-
-3. **Comptage de sections faux** — la fenêtre de recherche ne captait pas les
-   `className` posées sur la ligne suivante, soit **les quatre sections
-   longues** : celles-là échappaient au comptage. Le seuil de 9 était également
-   faux (les deux bandeaux n'ont pas de respiration verticale). Corrigé avec
-   une assertion exacte : 9 sections, 7 avec padding.
-
-### 7.3 Un accident de lecture pendant la vérification
-
-En ajoutant les classes CSS, un bloc a été **remplacé** au lieu d'être inséré
-avant : l'en-tête de commentaires du bloc « apparitions au scroll » a disparu.
-Repéré immédiatement par `tsc` + la suite de tests, restauré. Sans ce double
-contrôle, la page d'accueil perdait 12 lignes de commentaire.
+Les 546 incluent les 534 d'origine — aucun test perdu, aucun échec nouveau.
 
 ---
 
-## 8. Ce qui n'a pas été fait
+## 7. Vérifications
 
-- **Aucun test de rendu** — ni `jsdom` ni bibliothèque de composants, et
-  `next build` est interdit (RÈGLE 3). Les tests prouvent que les classes sont
-  **présentes et cohérentes**, pas que la page est **belle**.
-- **Aucun test mobile** — les scénarios 375 px et desktop sont à confirmer à la main.
-- **`shadow-card` conservé** sur le tableau et les cartes mobiles du barème
-  (cf. 7.1).
+| Contrôle | Résultat |
+|---|---|
+| `npx tsc --noEmit` | **exit 0** |
+| `npx oxlint src/` | **0 erreur**, 2 warnings préexistants hors périmètre |
+| `npm run test:unit` | **546 / 546** |
+
+Les 2 warnings (`client/parrainage/page.tsx`, imports inutilisés) sont présents
+sur `HEAD` propre, sans rapport avec ce chantier.
+
+---
+
+## 8. Déploiement Vercel — vérifié, pas supposé
+
+Un HTTP 200 ne prouve pas qu'un nouveau build est servi. Cinq contrôles.
+
+**8.1 — La page servie contient la refonte**
+
+`GET /devenir-technicien` → 200, 115 435 o.
+
+```
+bg-muted/60   ×8      bg-relio-bg  ×4
+card-premium  ×52     recruit-halo ×10
+```
+
+**8.2 — L'illustration est servie à sa taille exacte**
+
+```
+/technicien/parcours-illustration.png   200   574 122 o
+```
+
+**8.3 — L'ancien chemin est bien mort**
+
+```
+/parcours-illustration.png   404
+```
+
+**8.4 — L'aplat orange a disparu du bandeau**
+
+`grep -c "brand-gradient"` sur la page servie → **0**.
+
+**8.5 — La feuille de style du chantier est servie**
+
+Deux CSS référencés. `8bf40afc34d4668d.css` contient `.card-premium` ;
+l'autre (`020d714…`, inchangée) ne le contient pas. Le build est bien `4d4c517`.
 
 ---
 
 ## 9. Points d'attention
 
-### 9.1 L'illustration dépasse le seuil de poids que vous aviez fixé
+### 9.1 L'illustration dépasse le seuil de poids (74 Kio au-dessus)
 
-| Fichier | Poids | Seuil 500 Kio |
-|---|---|---|
-| `parcours-illustration.png` | **574 122 o** | **dépassé de 74 Kio** |
+Arbitré explicitement par le demandeur. Le premier affichage de la section 3
+coûte 574 Ko sur mobile. À recompresser si la page est visée sur réseau lent.
 
-Les visuels du programme de récompenses avaient été recompressés pour passer
-sous 500 Kio. Celui-ci échappe à ce traitement. Il n'a pas été recompressé :
-l'environnement n'a pas d'outil de compression d'image, et la mission
-interdit de redimensionner côté code.
+### 9.2 Le rendu visuel n'est pas vérifié
 
-### 9.2 Le fond profond du CTA final perd son halo sur petits écrans
+Ni `jsdom` ni bibliothèque de composants, et `next build` interdit (RÈGLE 3).
+Les contrôles § 8 prouvent que les **bonnes classes** sont livrées et servies,
+pas que l'**agencement** est bon à l'écran.
 
-Le halo central (`size-72`/`sm:size-96`) est positionné en
-`-top-24 left-1/2 -translate-x-1/2`. À 375 px, une section `p-6` est plus
-étroite que le halo translaté, qui déborde donc franchement — le `overflow-hidden`
-de la section le tronque proprement, mais l'effet est faible. À confirmer.
+Restent à confirmer manuellement :
 
-### 9.3 `bg-muted/30` est un gris très clair, pas un gris « très clair »
+| Point | Risque |
+|---|---|
+| Rythme à 60 % | perceptible sur mobile ? trop marqué sur desktop ? |
+| Halo du CTA final | `size-72`/`sm:size-96` centré en `-top-24` : à 375 px il déborde franchement, l'`overflow-hidden` le tronque — effet faible possible |
+| Illustration sur 375 px | hauteur réelle, lisibilité du texte interne |
+| Chiffres XXL | `text-6xl` sur deux colonnes de 375 px ne déborde pas ? |
 
-La spec disait `bg-muted/30`. `--muted` vaut `#eef0f3` en clair, donc `30 %`
-de ce gris sur fond blanc donne **#f9fafb** — presque blanc. L'alternance
-risque d'être **trop subtile pour être perçue** sur un écran de téléphone en
-plein soleil. Si le rythme reste plat au test, il faudra monter à
-`bg-muted/60` ou `bg-muted`.
-
-### 9.4 Node 22 est requis et absent de la machine
+### 9.3 Node 22 est requis et absent de la machine
 
 Seul Node 20.20.2 est installé, `nvm` n'est pas présent, `.nvmrc` est
 inopérant. Sur Node 20, `npm run test:unit` échoue **39/39** en
 `ERR_UNKNOWN_FILE_EXTENSION` : fausse alerte, pas une régression. Chiffres
 obtenus avec Node 22.20.0 installé **hors dépôt** (`/tmp/opencode/n22`).
+
+### 9.4 Trois erreurs commises pendant ce chantier, corrigées
+
+Consignées parce qu'elles sont instructives, pas pour excuser :
+
+1. **Chemin d'asset erroné dans un test** — `../public/…` depuis `src/lib/`
+   résout vers `src/public/`, inexistant ; le test concluait que l'image
+   manquait alors qu'elle était là. Corrigé en `../../public/…`.
+   → **Deuxième fois sur ce dépôt**, après le même cas dans
+   `landing-animations.test.ts`. La cause est identifiée : je raisonne sur la
+   racine du dépôt au lieu du répertoire du fichier de test.
+
+2. **Media query ciblée à tort** — `lastIndexOf('@media (prefers-reduced-motion: reduce)')`
+   trouvait la règle **globale** (qui ne traite que les durées) au lieu de celle
+   de `.card-premium`. Le test aurait validé la mauvaise règle. Corrigé en
+   cherchant la media query située **après** la déclaration de la classe.
+
+3. **Comptage de sections faux** — la fenêtre de recherche ne captait pas les
+   `className` posées sur la ligne suivante, soit les **quatre sections
+   longues**. Le seuil était également faux (les deux bandeaux n'ont pas de
+   respiration verticale). Corrigé en assertion exacte : 9 sections,
+   7 avec padding.
+
+Aucun de ces défauts n'a atteint le code produit : dans les trois cas,
+`tsc` et la suite ont suffi à les révéler — jamais le lint.
 
 ### 9.5 `rewards-hero.png` (432 Ko) toujours sans usage — reporté.
 
@@ -233,22 +285,11 @@ obtenus avec Node 22.20.0 installé **hors dépôt** (`/tmp/opencode/n22`).
 
 ## 10. Questions bloquantes
 
-**Aucune pour le push**, mais deux arbitrages sont recommandés avant :
+**Aucune.** Les deux arbitrages ont été appliqués, l'illustration validée en
+l'état.
 
-1. **§ 9.1 — compressor l'illustration ?** Elle dépasse de 74 Kio le seuil que
-   vous aviez fixé pour les autres visuels. Fournir un fichier recompressé
-   (comme pour les récompenses), ou accepter le poids en l'état ?
-2. **§ 7.1 — élargir `devenir-technicien.test.ts` ?** Sinon le tableau et les
-   cartes mobiles du barème restent les deux seuls blocs de la page sans le
-   nouveau rythme.
+Points ouverts, sans blocage :
 
----
-
-## 11. Décision attendue
-
-```
-☐ Valider — pousser le commit refonte UI
-☐ Compresser d'abord l'illustration (574 Ko → < 500 Ko)
-☐ Élargir l'assertion de devenir-technicien.test.ts, puis pousser
-☐ Corriger avant push (préciser)
-```
+- Compression de l'illustration (§ 9.1) ;
+- Confirmation navigateur des quatre points du § 9.2 ;
+- Node 22 sur la machine de développement (§ 9.3).
