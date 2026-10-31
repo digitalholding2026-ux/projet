@@ -53,7 +53,8 @@ Aucune.
 
 Aucun bug serveur. Un problème côté dépôt, en revanche :
 
-1. **`connexion serveur backend.txt` n'est PAS ignoré par Git.** `.gitignore` ne contient que le nom littéral `connexion VPS.txt`, pas de motif générique. Le fichier apparaît donc en `?? "connexion serveur backend.txt"` dans `git status` à la racine. Un `git add -A` — ou un `git add .` distrait — **versionnerait l'adresse et l'utilisateur du serveur dans `projet.git`**. Cela contredit la RÈGLE 5, qui suppose `connexion*.txt` déjà ignoré. Correctif d'une ligne : remplacer `connexion VPS.txt` par `connexion*.txt` dans `.gitignore`. **Non appliqué** : modification du dépôt racine hors périmètre de cette demande, à valider.
+1. **`connexion serveur backend.txt` n'était PAS ignoré par Git.** `.gitignore` ne contenait que le nom littéral `connexion VPS.txt`, pas de motif générique. Le fichier apparaissait donc en `?? "connexion serveur backend.txt"` dans `git status` à la racine : un `git add -A` aurait versionné l'accès serveur dans `projet.git`, contredisant la RÈGLE 5.
+   **Correctif appliqué** (commit `chore: ignorer connexion*.txt a la racine`) : la ligne `connexion VPS.txt` est remplacée par `connexion*.txt`. Vérifié après coup — `git check-ignore -v` renvoie bien `.gitignore:10:connexion*.txt` pour `connexion serveur backend.txt`, et le fichier a disparu de `git status`. Il reste sur le disque, toujours non suivi.
 
 ## Points d'attention
 

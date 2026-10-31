@@ -7,5 +7,5 @@ backend/data/*.json
 *.pem
 *.key
 Relio.pem
-connexion VPS.txt
+connexion*.txt
 
