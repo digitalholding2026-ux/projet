@@ -199,3 +199,22 @@ travail existant.
 
 Référence de l'incident : D2.5 (`dea7651` backend, `00f7e49` frontend) était
 signalé « à venir » alors que Railway et Vercel le servaient déjà.
+
+---
+
+## RÈGLE 8 — DEUX SERVEURS, DEUX RÔLES EXCLUSIFS
+
+L'infrastructure compte **deux machines** administrées, décrites en détail dans
+deux fichiers de la racine. Les lire **avant** toute intervention serveur.
+
+| Fichier | Machine | Rôle — exclusif |
+|---|---|---|
+| `SERVEUR-1-SASPAY.md` | `api.relioo.space` (`13.61.214.149`, AWS Paris) | **Relais payout SasPay uniquement.** N'y déployer aucune API, aucun frontend, aucune base. |
+| `SERVEUR-2-BACKEND.md` | `ec2-13-48-13-31.eu-north-1...` (`13.48.13.31`, AWS Stockholm, 39 Go) | **Déploiement du backend NestJS.** |
+
+- Accès : utilisateur `ubuntu`, clé `Relio.pem` (racine, ignorée par Git), aucun mot de passe.
+- Ne jamais échanger les rôles : le serveur 1 a une IP fixe utilisée par SasPay,
+  le serveur 2 est une instance générale.
+- Le reste de l'hébergement n'est pas administrable en shell : frontend sur
+  **Vercel**, API de production sur **Railway**, stockage sur **Supabase**.
+- Ne jamais versionner de fichier de connexion en clair (`connexion*.txt`, `*.pem`).
