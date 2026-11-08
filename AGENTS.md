@@ -218,3 +218,37 @@ deux fichiers de la racine. Les lire **avant** toute intervention serveur.
 - Le reste de l'hébergement n'est pas administrable en shell : frontend sur
   **Vercel**, API de production sur **Railway**, stockage sur **Supabase**.
 - Ne jamais versionner de fichier de connexion en clair (`connexion*.txt`, `*.pem`).
+
+---
+
+## RÈGLE 9 — LIEN VERCEL (FRONTEND) → RAILWAY (BACKEND)
+
+**URL de production du backend (Railway) :**
+`https://repairdom-backend-production.up.railway.app`
+
+**URL de production du frontend (Vercel) :**
+`https://www.relioo.space`
+
+### Variables d'environnement Frontend (Vercel → Settings → Environment Variables → Production)
+
+| Variable | Valeur exacte | Rôle |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `https://repairdom-backend-production.up.railway.app/api` | Base de l'API appelée par le frontend (`apiBaseUrl`). **Doit se terminer par `/api`** car NestJS applique `app.setGlobalPrefix('api')` (`backend/src/main.ts:16`). |
+| `NEXT_PUBLIC_APP_URL` | `https://www.relioo.space` | URL publique du site (liens canoniques, métadonnées). |
+
+### Variables d'environnement Backend (Railway → Variables)
+
+| Variable | Valeur | Rôle |
+|---|---|---|
+| `NODE_ENV` | `production` | Active le CORS restreint |
+| `CORS_ORIGINS` | `https://www.relioo.space` (ou `https://www.relioo.space,https://relioo.space`) | Origine(s) autorisée(s) à appeler l'API avec les cookies de session |
+| `PORT` | (laissé à Railway / `3000`) | Port HTTP de l'API |
+| `DATABASE_URL` | injectée par Railway PostgreSQL | Connexion Prisma |
+| `JWT_SECRET` | `openssl rand -base64 48` (défini en prod) | Signature des sessions (sessions réinitialisées à chaque redéploiement si absent) |
+
+### Règle d'or
+
+Si le frontend affiche `Cannot POST /auth/login` (ou `Cannot GET /...` 404), c'est que `NEXT_PUBLIC_API_URL` manque le suffixe `/api`. Corriger la variable côté Vercel, puis redéployer le frontend. Aucun changement de code n'est nécessaire.
+
+> Secrets : ne jamais committer `JWT_SECRET`, `RESEND_API_KEY`, `SASPAY_*`, `VAPID_PRIVATE_KEY`, `DATABASE_URL`. Ils se déclarent dans Railway / Vercel uniquement.
+
