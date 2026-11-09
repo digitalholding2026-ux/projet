@@ -4,38 +4,47 @@
 
 - Date : 2026-11-09
 - Dépôt concerné : `Repairdom-backend` (Railway), remote `origin` = `https://github.com/digitalholding2026-ux/Repairdom-backend.git`
-- Commit : `02b9fb1` (backend `main`)
-- État push : poussé sur `origin/main`
-- État déploiement : en attente du prochain d\u00e9ploiement Railway (le `preDeployCommand` `prisma migrate deploy` appliquera la migration)
+- Commits : `02b9fb1` (ajout colonne escrowStartedAt) + `fc7dce4` (récupération tables financières), backend `main`
+- État push : poussés sur `origin/main`
+- État déploiement : en attente du prochain déploiement Railway (le `preDeployCommand` `prisma migrate deploy` appliquera les migrations)
 
 ## Synthèse
 
-Correction d'une r\u00e9gression en production : la colonne `Demande.escrowStartedAt` \u00e9tait d\u00e9clar\u00e9e dans `schema.prisma` mais aucune migration ne la cr\u00e9ait en base. Le service `EscrowCronService.processOverdueEscrows()` interroge `prisma.fundsHold.findMany()` avec `include: { demande }`, ce qui fait lire `demande.escrowStartedAt` par Prisma. En production, la colonne n'existant pas, la requ\u00e9te \u00e9chouait avec `PrismaClientKnownRequestError P2022` : `column Demande.escrowStartedAt does not exist`. Le backend red\u00e9marrait en boucle sur Railway.
+Correction d'une régression en production : le backend redémarrait en boucle sur Railway à cause d'erreurs Prisma au démarrage du `EscrowCronService`.
+
+Deux problèmes successifs ont été identifiés et corrigés :
+
+1. **Colonne `Demande.escrowStartedAt` manquante** (`P2022`) : la colonne était déclarée dans `schema.prisma` mais aucune migration ne la créait en base. Ajout de la migration manquante `20261109010000_add_demande_escrow_started_at`.
+
+2. **Tables financières manquantes** (`P2021`, `table public.FundsHold does not exist`) : après application de la première migration, le service a poursuivi son exécution et échoué sur l'absence de la table `FundsHold` (et vraisemblablement `FinancialTransaction`, `TopupIntent`, `WithdrawalRequest`). La base de production est en drift : certaines migrations financières sont enregistrées comme appliquées dans `_prisma_migrations` mais leurs tables n'existent pas réellement, donc `prisma migrate deploy` les saute. Ajout d'une migration de récupération `20261109020000_recover_financial_tables` qui recrée tous les objets financiers avec des gardes d'idempotence (`IF NOT EXISTS`, `EXCEPTION WHEN duplicate_object`, `undefined_table`).
 
 ## Fichiers
 
-- Cr\u00e9\u00e9 : `Backend/prisma/migrations/20261109010000_add_demande_escrow_started_at/migration.sql`
+- Créé : `Backend/prisma/migrations/20261109010000_add_demande_escrow_started_at/migration.sql`
+- Créé : `Backend/prisma/migrations/20261109020000_recover_financial_tables/migration.sql`
 
 ## Migrations
 
-- `20261109010000_add_demande_escrow_started_at` : `ALTER TABLE "Demande" ADD COLUMN IF NOT EXISTS "escrowStartedAt" TIMESTAMP(3);` — additive, nullable, idempotent (`IF NOT EXISTS`).
+- `20261109010000_add_demande_escrow_started_at` : `ALTER TABLE "Demande" ADD COLUMN IF NOT EXISTS "escrowStartedAt" TIMESTAMP(3);` — additive, nullable, idempotent.
+- `20261109020000_recover_financial_tables` : recrée les énumérations (`FinancialTransactionType`, `FinancialTransactionDirection`, `FinancialTransactionStatus`, `FinancialTransactionMode`, `SasPayOperationStatus`, `FundsHoldStatus`), les tables (`FinancialTransaction`, `FundsHold`, `TopupIntent`, `WithdrawalRequest`, `RelioWithdrawal`), les index et les clés étrangères, toutes avec gardes d'idempotence.
 
-## V\u00e9rifications
+## Vérifications
 
-- `tsc --noEmit`, `oxlint`, `vitest run` : **non ex\u00e9cut\u00e9s localement** — `node_modules` absent (R\u00e8gle 3 : `npm install`/`npm ci` non encore lanc\u00e9s localement, `next build`/`npm run dev` interdits).
-- Preuve fonctionnelle : le push vers `origin/main` a r\u00e9ussi (`c0dd45e..02b9fb1  main -> main`). La migration sera appliqu\u00e9e par Railway via `preDeployCommand` au prochain red\u00e9ploiement.
-- Preuve de non-r\u00e9gression : **non \u00e9tablie** (pas d'ex\u00e9cution de tests locaux possible sans `npm ci`).
+- `tsc --noEmit`, `oxlint`, `vitest run` : **non exécutés localement** — `node_modules` absent (Règle 3 : `npm install`/`npm ci` non encore lancés localement, `next build`/`npm run dev` interdits).
+- Preuve fonctionnelle : les deux pushes vers `origin/main` ont réussi (`c0dd45e..02b9fb1` puis `02b9fb1..fc7dce4`). Les migrations seront appliquées par Railway via `preDeployCommand` au prochain redéploiement.
+- Preuve de non-régression : **non établie** (pas d'exécution de tests locaux possible sans `npm ci`).
 
-## Bugs trouv\u00e9s
+## Bugs trouvés
 
-- Colonne `Demande.escrowStartedAt` manquante en base de production alors que pr\u00e9sente dans `schema.prisma` (impact : crash P2022 du `EscrowCronService` au d\u00e9marrage, red\u00e9marrage en boucle Railway).
-- Correctif : migration manquante ajout\u00e9e, commit `02b9fb1`, pouss\u00e9 sur `main`.
+- Colonne `Demande.escrowStartedAt` manquante en production (impact : crash P2022, redémarrage en boucle). Correctif : commit `02b9fb1`.
+- Tables `FinancialTransaction`, `FundsHold`, `TopupIntent`, `WithdrawalRequest` manquantes en production (impact : crash P2021 après correction de la colonne). Correctif : commit `fc7dce4`.
+- Racine de cause : drift entre `_prisma_migrations` et l'état réel de la base de production.
 
 ## Points d'attention
 
-- La migration n'est pas encore appliqu\u00e9e en production : elle le sera au prochain d\u00e9ploiement Railway (d\u00e9clench\u00e9 par le push ou un red\u00e9ploiement manuel).
-- Aucune v\u00e9rification statique locale (`tsc`, `oxlint`) n'a pu \u00eatre effectu\u00e9e (pas de `node_modules`).
-- `npm.cmd ci` n'a pas \u00e9t\u00e9 lanc\u00e9 dans `Backend/` ni `Frontend/` (R\u00e8gle 3 : interdit en local pour `npm run dev`/`next build`, mais `ci` est une installation propre non interdite ; non fait par choix de pr\u00e9caution).
+- Les migrations ne sont pas encore appliquées en production : elles le seront au prochain déploiement Railway (déclenché par le push ou un redéploiement manuel).
+- Aucune vérification statique locale (`tsc`, `oxlint`) n'a pu être effectuée (pas de `node_modules`).
+- `npm.cmd ci` n'a pas été lancé dans `Backend/` ni `Frontend/`.
 
 ## Questions bloquantes
 
