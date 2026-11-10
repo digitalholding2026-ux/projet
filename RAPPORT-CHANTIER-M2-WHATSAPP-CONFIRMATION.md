@@ -9,12 +9,14 @@
   - Backend : `deefbaa` fix(api): ajouter colonne travelFee manquante sur CatalogItem (drift production)
   - Backend : `dcd2e95` fix(api): ajouter colonne depositAmount manquante sur Demande (drift production)
   - Backend : `a1ffa30` fix(api): ajouter colonnes depositPaid et isNoShow manquantes sur Demande (drift production)
-  - Backend : `1380c13` feat(api): autoriser dépôt de demande anonyme (client invité FRP/Système)
-  - Backend : `0595181` feat(tracking): add anonymous tracking API and status update endpoint
-  - Frontend : `ae27db8` feat(m2): replace booking fees avec WhatsApp confirmation workflow
-  - Frontend : `cce3ae3` feat(ui): utiliser la vraie photo admin comme avatar par défaut dans l'encart technicien
-  - Frontend : `87eeea5` feat(wizard): dépôt de demande anonyme pour FRP/Système + suivi par token
-  - Frontend : `3ac13b3` feat(tracking): create anonymous tracking page with timeline
+- Backend : `1380c13` feat(api): autoriser dépôt de demande anonyme (client invité FRP/Système)
+- Backend : `0595181` feat(tracking): add anonymous tracking API and status update endpoint
+- Backend : `01e9334` feat(settings): ajouter le modèle PlatformSetting et API de paramètres globaux
+- Frontend : `ae27db8` feat(m2): replace booking fees avec WhatsApp confirmation workflow
+- Frontend : `cce3ae3` feat(ui): utiliser la vraie photo admin comme avatar par défaut dans l'encart technicien
+- Frontend : `87eeea5` feat(wizard): dépôt de demande anonyme pour FRP/Système + suivi par token
+- Frontend : `3ac13b3` feat(tracking): create anonymous tracking page with timeline
+- Frontend : `a8296e2` feat(settings): page paramètres admin + liens WhatsApp configurables
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
@@ -25,6 +27,7 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - Smartphone : création de compte obligatoire (escrow), paiement sécurisé en ligne
 - Corrections de drift production : travelFee, depositAmount, depositPaid, isNoShow
 - Suivi public anonyme et workflow de changement de statut admin
+- Système de paramètres globaux (Settings) pour configurer le nom, le numéro WhatsApp et l'avatar du technicien depuis le back-office
 
 ## Fichiers
 
@@ -50,6 +53,25 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - `src/tracking/tracking.controller.ts` — `GET /api/tracking/token/:token` ajouté
 - `src/tracking/tracking.service.ts` — `trackByToken()` ajouté, `buildPublicTracking` étendu avec adresse/téléphone
 
+**Backend — Settings (nouveau) :**
+- `prisma/schema.prisma` — modèle `PlatformSetting` ajouté (adminName, adminWhatsApp, adminAvatarUrl, supportEmail)
+- `prisma/migrations/20261110050000_add_platform_setting/` — migration avec seed par défaut
+- `src/settings/settings.module.ts` — module Settings
+- `src/settings/settings.controller.ts` — `GET /api/settings/public`, `GET/PATCH /api/settings/admin`
+- `src/settings/settings.service.ts` — logique métier (get/upsert)
+- `src/settings/dto/platform-setting.dto.ts` — DTO de lecture
+- `src/settings/dto/update-platform-setting.dto.ts` — DTO de mise à jour
+- `src/app.module.ts` — `SettingsModule` enregistré
+
+**Frontend — Settings (nouveau) :**
+- `src/lib/api/settings-service.ts` — `getPublicSettings()`, `getAdminSettings()`, `updateAdminSettings()`
+- `src/app/admin/parametres/page.tsx` — page de configuration des paramètres
+- `src/app/admin/layout.tsx` — lien "Paramètres" dans la barre latérale admin
+
+**Frontend — Corrections WhatsApp :**
+- `src/components/client/demande-wizard.tsx` — lien WhatsApp utilise `encodeURIComponent()`, paramètres API, avatar depuis settings
+- `src/app/suivi/[token]/page.tsx` — lien WhatsApp utilise `encodeURIComponent()`, paramètres API
+
 **Frontend (`Repairdom-frontend`) :**
 - `src/components/client/demande-wizard.tsx` — étape 3 différenciée : FRP/Système sans compte, SMARTPHONE avec compte, redirection vers `/suivi/[token]`
 - `src/components/client/demande-auth-modal.tsx` — prop `prefillPhone` ajoutée
@@ -69,6 +91,7 @@ Aucun fichier supprimé.
 - `20261110020000_add_demande_deposit_amount` — ajoute `depositAmount` INTEGER sur `Demande` (idempotente).
 - `20261110030000_add_demande_deposit_paid` — ajoute `depositPaid` BOOLEAN et `isNoShow` BOOLEAN sur `Demande` (idempotentes).
 - `20261110040000_add_guest_client_support` — rend `User.passwordHash` nullable, ajoute `Demande.trackingToken` TEXT UNIQUE (idempotente).
+- `20261110050000_add_platform_setting` — crée la table `PlatformSetting` avec une ligne par défaut (`id = 'default'`, `adminName = 'Technicien Relio'`, `adminWhatsApp = '237600000000'`).
 
 ## Vérifications
 
@@ -77,8 +100,8 @@ Aucun fichier supprimé.
 - `npm run lint` (backend) : réussi (warnings pré-existants uniquement)
 - `npm run lint` (frontend) : réussi (warnings pré-existants uniquement)
 - `npx prisma generate` : réussi (Prisma Client 7.10.0 généré)
-- `git push origin main` backend : `1380c13..0595181 main -> main` — OK
-- `git push origin main` frontend : `87eeea5..3ac13b3 main -> main` — OK
+- `git push origin main` backend : `0595181..01e9334 main -> main` — OK
+- `git push origin main` frontend : `a8296e2` pushed (was `3ac13b3`) — OK
 - `git status -sb` à la racine `projet.git` : `?? Backend/` et `?? Frontend/` uniquement (RÈGLE 2 respectée)
 
 ## Bugs trouvés
