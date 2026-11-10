@@ -19,7 +19,9 @@
   - Frontend : `3ac13b3` feat(tracking): create anonymous tracking page with timeline
   - Frontend : `a8296e2` feat(settings): page paramètres admin + liens WhatsApp configurables
   - Frontend : `c0cad06` fix(wizard): reset state on service change and remove legacy deposit UI
-- Frontend : `c0fbc58` fix(wizard): add missing 'use client' directive
+  - Frontend : `c0fbc58` fix(wizard): add missing 'use client' directive
+  - Backend : `1600658` feat(tracking): ajouter API de recherche de demandes par numéro de téléphone
+  - Frontend : `7c0894c` feat(tracking): ajouter page de recherche par numéro de téléphone
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
@@ -34,6 +36,7 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - Suppression des validations V1 legacy (categoryId, description obligatoire) sur POST /api/demandes
 - Correction de la fuite d'état (state leak) lors du changement de service à l'étape 1 du wizard
 - Suppression définitive des frais de déplacement (1000 FCFA) pour FRP/Système — paiement 100% à la fin
+- **Recherche de demandes par numéro de téléphone (Guest Checkout)** : `POST /api/demandes/track/search` côté backend, page `/suivi` côté frontend avec listage des demandes en cours et historiques
 
 ## Fichiers
 
@@ -47,9 +50,11 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - `src/settings/settings.service.ts` — logique métier (get/upsert)
 - `src/settings/dto/platform-setting.dto.ts` — DTO de lecture
 - `src/settings/dto/update-platform-setting.dto.ts` — DTO de mise à jour
+- `src/demandes/dto/track-search.dto.ts` — DTO de recherche par téléphone
 
 **Frontend (`Repairdom-frontend`) :**
 - `public/admin.jpg` — photo de l'admin (avatar par défaut encart technicien)
+- `src/app/suivi/page.tsx` — page de recherche par numéro de téléphone + suivi par référence
 - `src/app/suivi/[token]/page.tsx` — page de suivi public anonyme par token UUID
 - `src/app/admin/parametres/page.tsx` — page de configuration des paramètres
 - `src/lib/api/settings-service.ts` — `getPublicSettings()`, `getAdminSettings()`, `updateAdminSettings()`
