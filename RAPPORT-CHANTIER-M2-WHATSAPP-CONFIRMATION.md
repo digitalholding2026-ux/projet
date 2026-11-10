@@ -10,18 +10,21 @@
   - Backend : `dcd2e95` fix(api): ajouter colonne depositAmount manquante sur Demande (drift production)
   - Backend : `a1ffa30` fix(api): ajouter colonnes depositPaid et isNoShow manquantes sur Demande (drift production)
   - Backend : `1380c13` feat(api): autoriser dépôt de demande anonyme (client invité FRP/Système)
+  - Backend : `0595181` feat(tracking): add anonymous tracking API and status update endpoint
   - Frontend : `ae27db8` feat(m2): replace booking fees avec WhatsApp confirmation workflow
   - Frontend : `cce3ae3` feat(ui): utiliser la vraie photo admin comme avatar par défaut dans l'encart technicien
   - Frontend : `87eeea5` feat(wizard): dépôt de demande anonyme pour FRP/Système + suivi par token
+  - Frontend : `3ac13b3` feat(tracking): create anonymous tracking page with timeline
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
 ## Synthèse
 
 Implémentation du workflow de confirmation WhatsApp et suppression de la friction client (chantier M2) :
-- FRP et Système : pas de compte requis, dépôt de demande anonyme avec numéro WhatsApp, suivi par token
+- FRP et Système : pas de compte requis, dépôt de demande anonyme avec numéro WhatsApp, suivi par token `/suivi/[token]`
 - Smartphone : création de compte obligatoire (escrow), paiement sécurisé en ligne
 - Corrections de drift production : travelFee, depositAmount, depositPaid, isNoShow
+- Suivi public anonyme et workflow de changement de statut admin
 
 ## Fichiers
 
@@ -29,6 +32,7 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 
 **Backend (`Repairdom-backend`) :**
 - `prisma/migrations/20261110040000_add_guest_client_support/migration.sql` — migration pour support client invité
+- `src/admin/dto/update-admin-demande-status.dto.ts` — DTO statuts V2 (RECEIVED, IN_PROGRESS, COMPLETED, CANCELLED)
 
 **Frontend (`Repairdom-frontend`) :**
 - `public/admin.jpg` — photo de l'admin (avatar par défaut encart technicien)
@@ -40,17 +44,20 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - `prisma/schema.prisma` — `User.passwordHash` optionnel, `Demande.trackingToken` ajouté
 - `src/auth/auth.service.ts` — rejet explicite des comptes sans mot de passe à la connexion
 - `src/demandes/demande-helpers.ts` — `trackingToken` dans `DemandeRecord` et `toApiDemande`
-- `src/demandes/demandes.controller.ts` — gardes auth retirés de `POST /demandes`, ajoutés sur toutes les autres routes
+- `src/demandes/demandes.controller.ts` — gardes auth retirés de `POST /demandes`, `GET /api/demandes/tracking/:trackingToken` ajouté
 - `src/demandes/demandes.service.ts` — `create()` supporte client anonyme (user fantôme + trackingToken)
+- `src/demandes/demandes.module.ts` — `PrismaModule` ajouté aux imports
 - `src/tracking/tracking.controller.ts` — `GET /api/tracking/token/:token` ajouté
-- `src/tracking/tracking.service.ts` — `trackByToken()` ajouté
+- `src/tracking/tracking.service.ts` — `trackByToken()` ajouté, `buildPublicTracking` étendu avec adresse/téléphone
 
 **Frontend (`Repairdom-frontend`) :**
-- `src/components/client/demande-wizard.tsx` — étape 3 différenciée : FRP/Système sans compte, SMARTPHONE avec compte
+- `src/components/client/demande-wizard.tsx` — étape 3 différenciée : FRP/Système sans compte, SMARTPHONE avec compte, redirection vers `/suivi/[token]`
 - `src/components/client/demande-auth-modal.tsx` — prop `prefillPhone` ajoutée
-- `src/lib/api/request-service.ts` — `trackingToken` dans `CreateDemandeResult`
-- `src/lib/api/tracking-service.ts` — `trackByToken()` ajouté
+- `src/lib/api/request-service.ts` — `trackingToken` dans `CreateDemandeResult`, `updateAdminDemandeStatus()` ajouté
+- `src/lib/api/tracking-service.ts` — `trackByToken()` ajouté, `PublicTracking` étendu avec adresse/téléphone
 - `src/app/client/demandes/[id]/page.tsx` — bandeau de succès différencié selon le service
+- `src/app/admin/demandes/[id]/page.tsx` — boutons de statut V2 (En cours / Terminée / Annulée), facture PDF, boutons WhatsApp
+- `src/app/suivi/[token]/page.tsx` — page de suivi public avec timeline, bouton WhatsApp, section facture
 
 ### Supprimés
 
@@ -70,8 +77,8 @@ Aucun fichier supprimé.
 - `npm run lint` (backend) : réussi (warnings pré-existants uniquement)
 - `npm run lint` (frontend) : réussi (warnings pré-existants uniquement)
 - `npx prisma generate` : réussi (Prisma Client 7.10.0 généré)
-- `git push origin main` backend : `a1ffa30..1380c13 main -> main` — OK
-- `git push origin main` frontend : `cce3ae3..87eeea5 main -> main` — OK
+- `git push origin main` backend : `1380c13..0595181 main -> main` — OK
+- `git push origin main` frontend : `87eeea5..3ac13b3 main -> main` — OK
 - `git status -sb` à la racine `projet.git` : `?? Backend/` et `?? Frontend/` uniquement (RÈGLE 2 respectée)
 
 ## Bugs trouvés
@@ -99,6 +106,7 @@ Les 24 échecs de tests vitest backend sont pré-existants (absence de base de d
 - Node.js v24.22.2 + npm 11.19.1 installés sur la machine (prérequis RÈGLE 4).
 - Les fichiers `.env` n'ont pas été créés depuis `.env.example` dans les deux dépôts applicatifs.
 - `User.passwordHash` est maintenant nullable : les comptes fantômes créés pour les clients anonymes ne peuvent pas se connecter par mot de passe (comportement voulu).
+- Le suivi public par token (`/suivi/[token]`) ne nécessite aucune authentification ; le token UUID est non devinable.
 
 ## Questions bloquantes
 
