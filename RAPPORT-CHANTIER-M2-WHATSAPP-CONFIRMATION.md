@@ -27,6 +27,7 @@
 - Frontend : `9317517` fix(ui): remplacer le panneau V1 'Techniciens vérifiés' par 'Technicien agréé' sur connexion/inscription
 - Frontend : `4887dc2` feat(dashboard): branches escrow payment, invoice download, WhatsApp confirmation badges on client demand cards; removes V1 drift text from admin layout and empty-state cards
 - Frontend : `0eb6a8b` fix(ui): remplacer 'Escrow' par 'Paiement Sécurisé' dans l'interface client
+- Frontend : `bfc1789` fix(ui): remplacer les textes V1 par le modèle Relio V2 sur la page d'accueil client
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
@@ -46,6 +47,7 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - Suppression des libellés V1 ("Mes missions" → "Mes demandes", "Techniciens vérifiés" → "Expertise Relio")
 - Remplacement du terme "Escrow" par "Paiement Sécurisé" dans tous les textes affichés au client
 - Suppression définitive des frais de déplacement (1000 FCFA) pour FRP/Système — paiement 100% à la fin
+- **Page d'accueil client (état vide) : V1 → V2** — "Aucune intervention en cours" → "Aucune demande en cours", "Aucun électricien/plombier" → "Besoin d'un dépannage informatique, d'une réparation de smartphone ou d'un déblocage ?", bouton "Demander un dépannage" → "Déposer une demande", cartes de réassurance : "Techniciens vérifiés" → "Expertise Relio", "Paiement sécurisé" → "Paiement à la fin", "Un technicien disponible près de chez vous" → "Confirmation par WhatsApp et déplacement rapide au lieu de votre choix"
 - **Recherche de demandes par numéro de téléphone (Guest Checkout)** : `POST /api/demandes/track/search` côté backend, page `/suivi` côté frontend avec listage des demandes en cours et historiques
 - **Rate-limiting sur `POST /api/auth/login`** : 5 tentatives par minute via `@nestjs/throttler`, réponse 429 en cas de dépassement
 - **Lien WhatsApp et suivi anonyme depuis la page de connexion** : texte et lien vers `/suivi` pour les clients sans compte
