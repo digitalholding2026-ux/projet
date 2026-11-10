@@ -21,7 +21,9 @@
   - Frontend : `c0cad06` fix(wizard): reset state on service change and remove legacy deposit UI
   - Frontend : `c0fbc58` fix(wizard): add missing 'use client' directive
   - Backend : `1600658` feat(tracking): ajouter API de recherche de demandes par numéro de téléphone
+  - Backend : `4cfaa95` fix(auth): add rate-limiting to login endpoint
   - Frontend : `7c0894c` feat(tracking): ajouter page de recherche par numéro de téléphone
+  - Frontend : `47fe0cf` fix(auth-ui): add guest tracking link and unify password validation rules
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
@@ -37,6 +39,9 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - Correction de la fuite d'état (state leak) lors du changement de service à l'étape 1 du wizard
 - Suppression définitive des frais de déplacement (1000 FCFA) pour FRP/Système — paiement 100% à la fin
 - **Recherche de demandes par numéro de téléphone (Guest Checkout)** : `POST /api/demandes/track/search` côté backend, page `/suivi` côté frontend avec listage des demandes en cours et historiques
+- **Rate-limiting sur `POST /api/auth/login`** : 5 tentatives par minute via `@nestjs/throttler`, réponse 429 en cas de dépassement
+- **Lien WhatsApp et suivi anonyme depuis la page de connexion** : texte et lien vers `/suivi` pour les clients sans compte
+- **Validation de mot de passe unifiée** : utilisation de `isPasswordStrong()` (8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre) sur les pages d'inscription et de connexion
 
 ## Fichiers
 
