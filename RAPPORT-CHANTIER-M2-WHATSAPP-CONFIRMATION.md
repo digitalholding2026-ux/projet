@@ -6,6 +6,7 @@
 - Dépôts concernés : `Repairdom-backend` (main), `Repairdom-frontend` (main), `projet` (main, rapport uniquement)
 - Commits :
   - Backend : `6c2309d` feat(m2): replace booking fees avec WhatsApp confirmation workflow
+  - Backend : `deefbaa` fix(api): ajouter colonne travelFee manquante sur CatalogItem (drift production)
   - Frontend : `ae27db8` feat(m2): replace booking fees avec WhatsApp confirmation workflow
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
@@ -38,7 +39,8 @@ Aucun fichier supprimé.
 
 ## Migrations
 
-Aucune migration nécessaire. L'enum `ConfirmationStatus` et le champ `confirmationStatus` existaient déjà dans le schéma Prisma et la migration `20261109030000_add_demande_confirmation_status`. L'endpoint `PATCH /api/admin/demandes/:id/confirm` existait déjà avec la vérification Escrow (FundsHold ACTIVE) pour le SMARTPHONE.
+- `20261110010000_add_catalog_item_travel_fee` — ajoute la colonne `travelFee` INTEGER sur `CatalogItem` (idempotente, `ADD COLUMN IF NOT EXISTS`). Corrige le drift production : le schéma Prisma déclare ce champ mais la migration `20261106010000_add_catalog_v2_services` avait créé la table sans.
+- L'enum `ConfirmationStatus` et le champ `confirmationStatus` existaient déjà dans le schéma Prisma et la migration `20261109030000_add_demande_confirmation_status`. L'endpoint `PATCH /api/admin/demandes/:id/confirm` existait déjà avec la vérification Escrow (FundsHold ACTIVE) pour le SMARTPHONE.
 
 ## Vérifications
 
@@ -49,12 +51,19 @@ Aucune migration nécessaire. L'enum `ConfirmationStatus` et le champ `confirmat
 - `npx vitest run` (backend) : 24 échecs, tous pré-existants (absence de base de données locale PostgreSQL, interdite en local par RÈGLE 3 ; mocks désuets sur Collaboration/Reviews/Disputes). Aucun échec lié aux modifications apportées.
 - `git push --dry-run` sur les 3 dépôts avant modification : `Everything up-to-date`
 - `git push origin main` backend : `ba72a06..6c2309d main -> main` — OK
+- `git push origin main` backend (fix travelFee) : `6c2309d..deefbaa main -> main` — OK
 - `git push origin main` frontend : `b4f9a9e..ae27db8 main -> main` — OK
 - `git status -sb` à la racine `projet.git` : `?? Backend/` et `?? Frontend/` uniquement (RÈGLE 2 respectée, pas d'indexation des sous-dossiers)
 
 ## Bugs trouvés
 
-Aucun bug introduit. Les 24 échecs de tests backend sont pré-existants (base de données inaccessible en local, interdite par RÈGLE 3 ; pas de régression par rapport à `HEAD` propre).
+1. **Bug de production (Railway) — `CatalogItem.travelFee` manquant.**
+   - Symptôme : `prisma.catalogItem.upsert()` dans `seed-catalog-data.ts` échoue avec `P2022: ColumnNotFound` sur `CatalogItem.travelFee`.
+   - Cause : le schéma Prisma déclare `CatalogItem.travelFee Int?` mais la migration `20261106010000_add_catalog_v2_services` a créé la table sans cette colonne. La base de production est en drift.
+   - Correctif : nouvelle migration `20261110010000_add_catalog_item_travel_fee` ajoutant `ALTER TABLE "CatalogItem" ADD COLUMN IF NOT EXISTS "travelFee" INTEGER` (idempotente).
+   - Commit : `deefbaa` sur `Repairdom-backend`, poussé sur `origin/main`.
+
+Les 24 échecs de tests vitest backend sont pré-existants (absence de base de données locale PostgreSQL, interdite par RÈGLE 3 ; mocks désuets sur Collaboration/Reviews/Disputes). Aucun échec lié aux modifications apportées.
 
 ## Points d'attention
 
