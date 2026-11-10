@@ -24,6 +24,7 @@
   - Backend : `4cfaa95` fix(auth): add rate-limiting to login endpoint
   - Frontend : `7c0894c` feat(tracking): ajouter page de recherche par numéro de téléphone
   - Frontend : `47fe0cf` fix(auth-ui): add guest tracking link and unify password validation rules
+- Frontend : `9317517` fix(ui): remplacer le panneau V1 'Techniciens vérifiés' par 'Technicien agréé' sur connexion/inscription
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
@@ -42,6 +43,7 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - **Rate-limiting sur `POST /api/auth/login`** : 5 tentatives par minute via `@nestjs/throttler`, réponse 429 en cas de dépassement
 - **Lien WhatsApp et suivi anonyme depuis la page de connexion** : texte et lien vers `/suivi` pour les clients sans compte
 - **Validation de mot de passe unifiée** : utilisation de `isPasswordStrong()` (8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre) sur les pages d'inscription et de connexion
+- **Remplacement du panneau V1 « Techniciens vérifiés »** par « Technicien agréé » sur la page de connexion et d'inscription, texte et image mis à jour pour le modèle Relio V2 (opérateur unique, service de proximité)
 
 ## Fichiers
 
