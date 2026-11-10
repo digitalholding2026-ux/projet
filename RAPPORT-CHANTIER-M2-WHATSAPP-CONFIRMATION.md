@@ -28,6 +28,7 @@
 - Frontend : `4887dc2` feat(dashboard): branches escrow payment, invoice download, WhatsApp confirmation badges on client demand cards; removes V1 drift text from admin layout and empty-state cards
 - Frontend : `0eb6a8b` fix(ui): remplacer 'Escrow' par 'Paiement Sécurisé' dans l'interface client
 - Frontend : `bfc1789` fix(ui): remplacer les textes V1 par le modèle Relio V2 sur la page d'accueil client
+- Frontend : `99f36a5` fix(auth-ui): inscription simplifiée, lien WhatsApp unique, lien se connecter, lien brouillon-compte
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
