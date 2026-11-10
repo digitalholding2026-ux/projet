@@ -25,6 +25,7 @@
   - Frontend : `7c0894c` feat(tracking): ajouter page de recherche par numéro de téléphone
   - Frontend : `47fe0cf` fix(auth-ui): add guest tracking link and unify password validation rules
 - Frontend : `9317517` fix(ui): remplacer le panneau V1 'Techniciens vérifiés' par 'Technicien agréé' sur connexion/inscription
+- Frontend : `4887dc2` feat(dashboard): branches escrow payment, invoice download, WhatsApp confirmation badges on client demand cards; removes V1 drift text from admin layout and empty-state cards
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
@@ -38,6 +39,10 @@ Implémentation du workflow de confirmation WhatsApp et suppression de la fricti
 - Système de paramètres globaux (Settings) pour configurer le nom, le numéro WhatsApp et l'avatar du technicien depuis le back-office
 - Suppression des validations V1 legacy (categoryId, description obligatoire) sur POST /api/demandes
 - Correction de la fuite d'état (state leak) lors du changement de service à l'étape 1 du wizard
+- Branchement du paiement Escrow (bouton "Payer et sécuriser" sur demande SMARTPHONE ACCEPTED, compte à rebours 48h sur IN_PROGRESS)
+- Bouton "Télécharger la facture" sur demande CONFIRMED
+- Statut de confirmation WhatsApp affiché sur les cartes de demande (PENDING/CONFIRMED)
+- Suppression des libellés V1 ("Mes missions" → "Mes demandes", "Techniciens vérifiés" → "Expertise Relio")
 - Suppression définitive des frais de déplacement (1000 FCFA) pour FRP/Système — paiement 100% à la fin
 - **Recherche de demandes par numéro de téléphone (Guest Checkout)** : `POST /api/demandes/track/search` côté backend, page `/suivi` côté frontend avec listage des demandes en cours et historiques
 - **Rate-limiting sur `POST /api/auth/login`** : 5 tentatives par minute via `@nestjs/throttler`, réponse 429 en cas de dépassement
