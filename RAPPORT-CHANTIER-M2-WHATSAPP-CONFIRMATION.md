@@ -7,6 +7,7 @@
 - Commits :
   - Backend : `6c2309d` feat(m2): replace booking fees avec WhatsApp confirmation workflow
   - Backend : `deefbaa` fix(api): ajouter colonne travelFee manquante sur CatalogItem (drift production)
+  - Backend : `dcd2e95` fix(api): ajouter colonne depositAmount manquante sur Demande (drift production)
   - Frontend : `ae27db8` feat(m2): replace booking fees avec WhatsApp confirmation workflow
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
@@ -40,6 +41,7 @@ Aucun fichier supprimé.
 ## Migrations
 
 - `20261110010000_add_catalog_item_travel_fee` — ajoute la colonne `travelFee` INTEGER sur `CatalogItem` (idempotente, `ADD COLUMN IF NOT EXISTS`). Corrige le drift production : le schéma Prisma déclare ce champ mais la migration `20261106010000_add_catalog_v2_services` avait créé la table sans.
+- `20261110020000_add_demande_deposit_amount` — ajoute la colonne `depositAmount` INTEGER sur `Demande` (idempotente, `ADD COLUMN IF NOT EXISTS`). Corrige le drift production : le schéma Prisma déclare ce champ mais aucune migration ne l'avait créé.
 - L'enum `ConfirmationStatus` et le champ `confirmationStatus` existaient déjà dans le schéma Prisma et la migration `20261109030000_add_demande_confirmation_status`. L'endpoint `PATCH /api/admin/demandes/:id/confirm` existait déjà avec la vérification Escrow (FundsHold ACTIVE) pour le SMARTPHONE.
 
 ## Vérifications
@@ -52,6 +54,7 @@ Aucun fichier supprimé.
 - `git push --dry-run` sur les 3 dépôts avant modification : `Everything up-to-date`
 - `git push origin main` backend : `ba72a06..6c2309d main -> main` — OK
 - `git push origin main` backend (fix travelFee) : `6c2309d..deefbaa main -> main` — OK
+- `git push origin main` backend (fix depositAmount) : `deefbaa..dcd2e95 main -> main` — OK
 - `git push origin main` frontend : `b4f9a9e..ae27db8 main -> main` — OK
 - `git status -sb` à la racine `projet.git` : `?? Backend/` et `?? Frontend/` uniquement (RÈGLE 2 respectée, pas d'indexation des sous-dossiers)
 
@@ -62,6 +65,12 @@ Aucun fichier supprimé.
    - Cause : le schéma Prisma déclare `CatalogItem.travelFee Int?` mais la migration `20261106010000_add_catalog_v2_services` a créé la table sans cette colonne. La base de production est en drift.
    - Correctif : nouvelle migration `20261110010000_add_catalog_item_travel_fee` ajoutant `ALTER TABLE "CatalogItem" ADD COLUMN IF NOT EXISTS "travelFee" INTEGER` (idempotente).
    - Commit : `deefbaa` sur `Repairdom-backend`, poussé sur `origin/main`.
+
+2. **Bug de production (Railway) — `Demande.depositAmount` manquant.**
+   - Symptôme : `EscrowCronService.processOverdueEscrows()` échoue avec `P2022: ColumnNotFound` sur `Demande.depositAmount` (`column Demande.depositAmount does not exist`).
+   - Cause : le schéma Prisma déclare `Demande.depositAmount Int?` mais aucune migration ne l'a créée. La base de production est en drift.
+   - Correctif : nouvelle migration `20261110020000_add_demande_deposit_amount` ajoutant `ALTER TABLE "Demande" ADD COLUMN IF NOT EXISTS "depositAmount" INTEGER` (idempotente).
+   - Commit : `dcd2e95` sur `Repairdom-backend`, poussé sur `origin/main`.
 
 Les 24 échecs de tests vitest backend sont pré-existants (absence de base de données locale PostgreSQL, interdite par RÈGLE 3 ; mocks désuets sur Collaboration/Reviews/Disputes). Aucun échec lié aux modifications apportées.
 
