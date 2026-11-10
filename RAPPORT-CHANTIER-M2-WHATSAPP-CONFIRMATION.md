@@ -19,6 +19,7 @@
   - Frontend : `3ac13b3` feat(tracking): create anonymous tracking page with timeline
   - Frontend : `a8296e2` feat(settings): page paramètres admin + liens WhatsApp configurables
   - Frontend : `c0cad06` fix(wizard): reset state on service change and remove legacy deposit UI
+- Frontend : `c0fbc58` fix(wizard): add missing 'use client' directive
 - État push : backend poussé (origin/main à jour), frontend poussé (origin/main à jour)
 - Déploiement : en attente (Railway pour le backend, Vercel pour le frontend) — non vérifié factuellement
 
