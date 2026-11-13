@@ -55,6 +55,7 @@ Frontend (`Repairdom-frontend`) :
 3. **Interface admin illisible** : textes chevauchants, pas de boutons d'action. Corrigé par la refonte du composant `ItemRow` (tableau, badges, switch activation, boutons Modifier/Supprimer).
 4. **Mappage DTO frontend → backend** : l'enregistrement de la modale d'édition échouait (400 `property price should not exist`) car le frontend envoyait `price` alors que le DTO `UpdateCatalogItemPricesDto` attend `pricePublic`. Corrigé par l'envoi de `pricePublic` et l'ajout de la fonction `updateCatalogItem` (PATCH `items/:id`) pour les champs texte.
 5. **Prix frontend/backend** : le champ `price` du frontend remplacé par `pricePublic` dans `updateCatalogItemPrices` pour correspondre au DTO backend.
+6. **Persistance admin** : après toute modification (prix, statut, suppression) ou création d'item, l'interface ne se rafraîchissait pas (seul `loadServices()` était appelé, qui ne recharge pas les items de catégorie). Ajout de `refreshExpandedCategory()` qui recharge les items de la catégorie actuellement ouverte après chaque écriture. Corrigé aussi l'appel `loadItems` qui ne passait que 2 args au lieu de 3 (clé `categoryId` indéfinie).
 
 ## Points d'attention
 
