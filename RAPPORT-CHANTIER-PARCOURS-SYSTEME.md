@@ -53,7 +53,8 @@ Frontend (`Repairdom-frontend`) :
 1. **Colonnes manquantes en base** : le seed Railway échouait car `targetDevice` n'existait pas en base (aucune migration n'avait été créée). Corrigé par la migration `20261113060000`.
 2. **Items inactifs par défaut** : le seed créait les items OS avec `active: false`, donc le menu client était vide. Corrigé : `active: true` dans le seed.
 3. **Interface admin illisible** : textes chevauchants, pas de boutons d'action. Corrigé par la refonte du composant `ItemRow` (tableau, badges, switch activation, boutons Modifier/Supprimer).
-4. **Mappage DTO frontend → backend** : l'enregistrement de la modale d'édition échouait (400) car le frontend utilisait `updateCatalogItemPrices` pour des champs non-prix. Corrigé par l'ajout de `updateCatalogItem` (PATCH `items/:id`) et séparation prix/champs texte.
+4. **Mappage DTO frontend → backend** : l'enregistrement de la modale d'édition échouait (400 `property price should not exist`) car le frontend envoyait `price` alors que le DTO `UpdateCatalogItemPricesDto` attend `pricePublic`. Corrigé par l'envoi de `pricePublic` et l'ajout de la fonction `updateCatalogItem` (PATCH `items/:id`) pour les champs texte.
+5. **Prix frontend/backend** : le champ `price` du frontend remplacé par `pricePublic` dans `updateCatalogItemPrices` pour correspondre au DTO backend.
 
 ## Points d'attention
 
